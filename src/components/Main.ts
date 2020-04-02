@@ -21,6 +21,11 @@ import {
 export default function Main(vido, props = {}) {
   const { api, state, onDestroy, Actions, update, createComponent, html, StyleMap, schedule } = vido;
   const componentName = api.name;
+  const periodDivider = {
+    minute: 60000,
+    hour: 3600000,
+    day: 86400000
+  };
 
   // Initialize plugins
   onDestroy(
@@ -227,14 +232,25 @@ export default function Main(vido, props = {}) {
    * @param {string} period
    * @param {object} internalTime
    */
-  const generatePeriodDates = (period: Period, internalTime: ChartInternalTime): ChartInternalTimeLevel => {
+  const generatePeriodDates = (
+    period: Period,
+    periodSize: number,
+    internalTime: ChartInternalTime
+  ): ChartInternalTimeLevel => {
+    const periodUsed = period === 'minute' ? 'hour' : period;
     const dates = [];
     let leftGlobal = internalTime.leftGlobal;
     const timePerPixel = internalTime.timePerPixel;
-    let startOfLeft = api.time
-      .date(leftGlobal)
-      .startOf(period)
-      .valueOf();
+    let startOfLeft =
+      Math.floor(
+        api.time
+          .date(leftGlobal)
+          .startOf(periodUsed)
+          .valueOf() /
+          (periodDivider[period] * periodSize)
+      ) *
+      periodSize *
+      periodDivider[period];
     if (startOfLeft < leftGlobal) startOfLeft = leftGlobal;
     let sub = leftGlobal - startOfLeft;
     let subPx = sub / timePerPixel;
@@ -243,18 +259,21 @@ export default function Main(vido, props = {}) {
     const diff = Math.ceil(
       api.time
         .date(internalTime.rightGlobal)
-        .endOf(period)
-        .diff(api.time.date(leftGlobal).startOf(period), period, true)
+        .endOf(periodUsed)
+        .diff(api.time.date(leftGlobal).startOf(periodUsed), period, true) / periodSize
     );
     for (let i = 0; i < diff; i++) {
       const date = {
         sub,
         subPx,
         leftGlobal,
-        rightGlobal: api.time
-          .date(leftGlobal)
-          .endOf(period)
-          .valueOf(),
+        rightGlobal:
+          Math.round(
+            api.time
+              .date(leftGlobal)
+              .add(periodSize, period)
+              .valueOf() / 10
+          ) * 10,
         width: 0,
         leftPx: 0,
         rightPx: 0,
@@ -298,6 +317,9 @@ export default function Main(vido, props = {}) {
       const formatting = level.formats.find(format => +time.zoom <= +format.zoomTo);
       if (formatting && level.main) {
         time.period = formatting.period;
+        time.periodSize = formatting.periodSize || 1;
+        time.roundMultiplier = periodDivider[time.period] * time.periodSize;
+        formatting.roundMultiplier = time.roundMultiplier;
       }
     }
     return time;
@@ -313,7 +335,7 @@ export default function Main(vido, props = {}) {
         time.level = index;
       }
       if (formatting) {
-        time.levels.push(generatePeriodDates(formatting.period, time));
+        time.levels.push(generatePeriodDates(formatting.period, formatting.periodSize || 1, time));
       }
       index++;
     }
@@ -399,7 +421,13 @@ export default function Main(vido, props = {}) {
         scrollLeft = (time.leftGlobal - time.finalFrom) / time.timePerPixel;
         scrollLeft = api.limitScrollLeft(time.totalViewDurationPx, chartWidth, scrollLeft);
       } else {
-        time.leftGlobal = scrollLeft * time.timePerPixel + time.finalFrom;
+        if (state.get('config.scroll.round')) {
+          time.leftGlobal =
+            Math.round(api.time.date(scrollLeft * time.timePerPixel + time.finalFrom) / time.roundMultiplier) *
+            time.roundMultiplier;
+        } else {
+          time.leftGlobal = scrollLeft * time.timePerPixel + time.finalFrom;
+        }
         time.rightGlobal = time.leftGlobal + chartWidth * time.timePerPixel;
       }
     }

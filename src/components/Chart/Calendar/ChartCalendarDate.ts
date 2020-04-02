@@ -82,6 +82,7 @@ export default function ChartCalendarDay(vido, props) {
     }
     const formats = level.formats;
     const formatting = formats.find(formatting => +time.zoom <= +formatting.zoomTo);
+    formatting.roundMultiplier = formatting.roundMultiplier || 1;
     let format;
     if (useCache && cache[cacheKey].format) {
       format = cache[cacheKey].format;
@@ -92,15 +93,22 @@ export default function ChartCalendarDay(vido, props) {
     if (useCache && cache[cacheKey].current) {
       current = cache[cacheKey].current;
     } else {
-      if (timeStart.format(props.currentDateFormat) === props.currentDate) {
+      if (timeStart <= api.time.date() && timeEnd > api.time.date()) {
         current = ' gstc-current';
-      } else if (timeStart.subtract(1, props.date.period).format(props.currentDateFormat) === props.currentDate) {
+      } else if (
+        timeStart.subtract(formatting.periodSize || 1, props.date.period) <= api.time.date() &&
+        timeEnd.subtract(formatting.periodSize || 1, props.date.period) > api.time.date()
+      ) {
         current = ' gstc-next';
-      } else if (timeStart.add(1, props.date.period).format(props.currentDateFormat) === props.currentDate) {
+      } else if (
+        timeStart.add(formatting.periodSize || 1, props.date.period) <= api.time.date() &&
+        timeEnd.add(formatting.periodSize || 1, props.date.period) > api.time.date()
+      ) {
         current = ' gstc-previous';
       } else {
         current = '';
       }
+
       cache[cacheKey].current = current;
     }
     let finalClassName = className + '-content ' + className + `-content--${props.date.period}` + current;

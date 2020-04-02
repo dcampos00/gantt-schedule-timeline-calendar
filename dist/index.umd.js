@@ -1,3 +1,5 @@
+
+(function(l, r) { if (l.getElementById('livereloadscript')) return; r = l.createElement('script'); r.async = 1; r.src = '//' + (window.location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1'; r.id = 'livereloadscript'; l.head.appendChild(r) })(window.document);
 (function (global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
     typeof define === 'function' && define.amd ? define(factory) :
@@ -1365,7 +1367,7 @@
     const isBrowser = typeof window !== 'undefined';
     if (isBrowser) {
         // If we run in the browser set version
-        (window['litHtmlVersions'] || (window['litHtmlVersions'] = [])).push('1.1.7');
+        (window['litHtmlVersions'] || (window['litHtmlVersions'] = [])).push('1.1.5');
     }
     /**
      * Interprets a template literal as an HTML template that can efficiently
@@ -3057,235 +3059,329 @@
             }
         }
         const PublicComponentMethods = getPublicComponentMethods(components, actionsByInstance, clone);
-        const InternalComponentMethods = getInternalComponentMethods(components, actionsByInstance, clone);
-        class vido {
-            constructor() {
-                this.destroyable = [];
-                this.onChangeFunctions = [];
-                this.debug = false;
-                this.state = state;
-                this.api = api;
-                this.lastProps = {};
-                this.html = html;
-                this.svg = svg;
-                this.directive = directive;
-                this.asyncAppend = asyncAppend;
-                this.asyncReplace = asyncReplace;
-                this.cache = cache;
-                this.classMap = classMap;
-                this.guard = guard;
-                this.ifDefined = ifDefined;
-                this.repeat = repeat;
-                this.unsafeHTML = unsafeHTML;
-                this.until = until;
-                this.schedule = schedule;
-                this.actionsByInstance = (componentActions, props) => { };
-                this.StyleMap = StyleMap;
-                this.Detach = Detach;
-                this.PointerAction = PointerAction;
-                this.Action = Action;
-                this._components = components;
-                this._actions = actionsByInstance;
-                this.reuseComponents = this.reuseComponents.bind(this);
-                this.onDestroy = this.onDestroy.bind(this);
-                this.onChange = this.onChange.bind(this);
-                this.update = this.update.bind(this);
-                for (const name in additionalMethods) {
-                    this[name] = additionalMethods[name];
+        /**
+         * Create vido instance for component
+         */
+        function vido() {
+            this.destroyable = [];
+            this.onChangeFunctions = [];
+            this.debug = false;
+            this.state = state;
+            this.api = api;
+            this.lastProps = {};
+            this.reuseComponents = this.reuseComponents.bind(this);
+            this.onDestroy = this.onDestroy.bind(this);
+            this.onChange = this.onChange.bind(this);
+            this.update = this.update.bind(this);
+            for (const name in additionalMethods) {
+                this[name] = additionalMethods[name];
+            }
+        }
+        vido.prototype.html = html;
+        vido.prototype.svg = svg;
+        vido.prototype.directive = directive;
+        vido.prototype.asyncAppend = asyncAppend;
+        vido.prototype.asyncReplace = asyncReplace;
+        vido.prototype.cache = cache;
+        vido.prototype.classMap = classMap;
+        vido.prototype.guard = guard;
+        vido.prototype.ifDefined = ifDefined;
+        vido.prototype.repeat = repeat;
+        vido.prototype.unsafeHTML = unsafeHTML;
+        vido.prototype.until = until;
+        vido.prototype.schedule = schedule;
+        vido.prototype.actionsByInstance = (componentActions, props) => { };
+        vido.prototype.StyleMap = StyleMap;
+        vido.prototype.Detach = Detach;
+        vido.prototype.PointerAction = PointerAction;
+        vido.prototype.addMethod = function addMethod(name, body) {
+            additionalMethods[name] = body;
+        };
+        vido.prototype.Action = Action;
+        vido.prototype.onDestroy = function onDestroy(fn) {
+            this.destroyable.push(fn);
+        };
+        vido.prototype.onChange = function onChange(fn) {
+            this.onChangeFunctions.push(fn);
+        };
+        vido.prototype.update = function update(callback) {
+            return this.updateTemplate(callback);
+        };
+        /**
+         * Reuse existing components when your data was changed
+         *
+         * @param {array} currentComponents - array of components
+         * @param {array} dataArray  - any data as array for each component
+         * @param {function} getProps - you can pass params to component from array item ( example: item=>({id:item.id}) )
+         * @param {function} component - what kind of components do you want to create?
+         * @param {boolean} leaveTail - leave last elements and do not destroy corresponding components
+         * @returns {array} of components (with updated/destroyed/created ones)
+         */
+        vido.prototype.reuseComponents = function reuseComponents(currentComponents, dataArray, getProps, component, leaveTail = true) {
+            const modified = [];
+            const currentLen = currentComponents.length;
+            const dataLen = dataArray.length;
+            let leave = false;
+            if (leaveTail && (dataArray === undefined || dataArray.length === 0)) {
+                leave = true;
+            }
+            let leaveStartingAt = 0;
+            if (currentLen < dataLen) {
+                let diff = dataLen - currentLen;
+                while (diff) {
+                    const item = dataArray[dataLen - diff];
+                    const newComponent = this.createComponent(component, getProps(item));
+                    currentComponents.push(newComponent);
+                    modified.push(newComponent.instance);
+                    diff--;
                 }
             }
-            addMethod(name, body) {
-                additionalMethods[name] = body;
-            }
-            onDestroy(fn) {
-                this.destroyable.push(fn);
-            }
-            onChange(fn) {
-                this.onChangeFunctions.push(fn);
-            }
-            update(callback) {
-                return this.updateTemplate(callback);
-            }
-            /**
-             * Reuse existing components when your data was changed
-             *
-             * @param {array} currentComponents - array of components
-             * @param {array} dataArray  - any data as array for each component
-             * @param {function} getProps - you can pass params to component from array item ( example: item=>({id:item.id}) )
-             * @param {function} component - what kind of components do you want to create?
-             * @param {boolean} leaveTail - leave last elements and do not destroy corresponding components
-             * @returns {array} of components (with updated/destroyed/created ones)
-             */
-            reuseComponents(currentComponents, dataArray, getProps, component, leaveTail = true) {
-                const modified = [];
-                const currentLen = currentComponents.length;
-                const dataLen = dataArray.length;
-                let leave = false;
-                if (leaveTail && (dataArray === undefined || dataArray.length === 0)) {
+            else if (currentLen > dataLen) {
+                let diff = currentLen - dataLen;
+                if (leaveTail) {
                     leave = true;
+                    leaveStartingAt = currentLen - diff;
                 }
-                let leaveStartingAt = 0;
-                if (currentLen < dataLen) {
-                    let diff = dataLen - currentLen;
-                    while (diff) {
-                        const item = dataArray[dataLen - diff];
-                        const newComponent = this.createComponent(component, getProps(item));
-                        currentComponents.push(newComponent);
-                        modified.push(newComponent.instance);
-                        diff--;
-                    }
-                }
-                else if (currentLen > dataLen) {
-                    let diff = currentLen - dataLen;
-                    if (leaveTail) {
-                        leave = true;
-                        leaveStartingAt = currentLen - diff;
-                    }
-                    while (diff) {
-                        const index = currentLen - diff;
-                        if (!leaveTail) {
-                            modified.push(currentComponents[index].instance);
-                            currentComponents[index].destroy();
-                        }
-                        diff--;
-                    }
+                while (diff) {
+                    const index = currentLen - diff;
                     if (!leaveTail) {
-                        currentComponents.length = dataLen;
+                        modified.push(currentComponents[index].instance);
+                        currentComponents[index].destroy();
                     }
+                    diff--;
                 }
-                let index = 0;
-                for (const component of currentComponents) {
-                    const item = dataArray[index];
-                    if (!modified.includes(component.instance)) {
-                        component.change(getProps(item), { leave: leave && index >= leaveStartingAt });
-                    }
-                    index++;
+                if (!leaveTail) {
+                    currentComponents.length = dataLen;
                 }
             }
-            createComponent(component, props = {}, content = null) {
-                const instance = component.name + ':' + componentId++;
-                let vidoInstance;
-                vidoInstance = new vido();
-                vidoInstance.instance = instance;
-                vidoInstance.name = component.name;
-                vidoInstance.Actions = new InstanceActionsCollector(instance);
-                const publicMethods = new PublicComponentMethods(instance, vidoInstance, props);
-                const internalMethods = new InternalComponentMethods(instance, vidoInstance, component(vidoInstance, props, content), content);
-                components.set(instance, internalMethods);
-                components.get(instance).change(props);
-                if (vidoInstance.debug) {
-                    console.groupCollapsed(`component created ${instance}`);
-                    console.log(clone({ props, components: components.keys(), actionsByInstance }));
-                    console.trace();
-                    console.groupEnd();
+            let index = 0;
+            for (const component of currentComponents) {
+                const item = dataArray[index];
+                if (!modified.includes(component.instance)) {
+                    component.change(getProps(item), { leave: leave && index >= leaveStartingAt });
                 }
-                return publicMethods;
+                index++;
             }
-            destroyComponent(instance, vidoInstance) {
-                if (vidoInstance.debug) {
-                    console.groupCollapsed(`destroying component ${instance}...`);
-                    console.log(clone({ components: components.keys(), actionsByInstance }));
-                    console.trace();
-                    console.groupEnd();
-                }
-                if (actionsByInstance.has(instance)) {
-                    for (const action of actionsByInstance.get(instance)) {
-                        if (typeof action.componentAction.destroy === 'function') {
-                            action.componentAction.destroy(action.element, action.props);
-                        }
-                    }
-                }
-                actionsByInstance.delete(instance);
-                const component = components.get(instance);
-                component.update();
-                component.destroy();
-                components.delete(instance);
-                if (vidoInstance.debug) {
-                    console.groupCollapsed(`component destroyed ${instance}`);
-                    console.log(clone({ components: components.keys(), actionsByInstance }));
-                    console.trace();
-                    console.groupEnd();
-                }
+        };
+        const InternalComponentMethods = getInternalComponentMethods(components, actionsByInstance, clone);
+        /**
+         * Create component
+         *
+         * @param {function} component
+         * @param {any} props
+         * @returns {object} component instance methods
+         */
+        function createComponent(component, props = {}, content = null) {
+            const instance = component.name + ':' + componentId++;
+            let vidoInstance;
+            vidoInstance = new vido();
+            vidoInstance.instance = instance;
+            vidoInstance.name = component.name;
+            vidoInstance.Actions = new InstanceActionsCollector(instance);
+            const publicMethods = new PublicComponentMethods(instance, vidoInstance, props);
+            const internalMethods = new InternalComponentMethods(instance, vidoInstance, component(vidoInstance, props, content), content);
+            components.set(instance, internalMethods);
+            components.get(instance).change(props);
+            if (vidoInstance.debug) {
+                console.groupCollapsed(`component created ${instance}`);
+                console.log(clone({ props, components: components.keys(), actionsByInstance }));
+                console.trace();
+                console.groupEnd();
             }
-            executeActions() {
-                var _a, _b, _c;
-                for (const actions of actionsByInstance.values()) {
-                    for (const action of actions) {
-                        if (action.element.vido === undefined) {
-                            const componentAction = action.componentAction;
-                            const create = componentAction.create;
-                            if (typeof create !== 'undefined') {
-                                let result;
-                                if (((_a = create.prototype) === null || _a === void 0 ? void 0 : _a.isAction) !== true &&
-                                    create.isAction === undefined &&
-                                    ((_b = create.prototype) === null || _b === void 0 ? void 0 : _b.update) === undefined &&
-                                    ((_c = create.prototype) === null || _c === void 0 ? void 0 : _c.destroy) === undefined) {
-                                    result = create(action.element, action.props);
-                                }
-                                else {
-                                    result = new create(action.element, action.props);
-                                }
-                                if (result !== undefined) {
-                                    if (typeof result === 'function') {
-                                        componentAction.destroy = result;
-                                    }
-                                    else {
-                                        if (typeof result.update === 'function') {
-                                            componentAction.update = result.update.bind(result);
-                                        }
-                                        if (typeof result.destroy === 'function') {
-                                            componentAction.destroy = result.destroy.bind(result);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        else {
-                            action.element.vido = action.props;
-                            if (typeof action.componentAction.update === 'function') {
-                                action.componentAction.update(action.element, action.props);
-                            }
-                        }
-                    }
-                    for (const action of actions) {
-                        action.element.vido = action.props;
+            return publicMethods;
+        }
+        vido.prototype.createComponent = createComponent;
+        class Slot extends Directive {
+            constructor(components, props = {}, content = null) {
+                super();
+                this.components = [];
+                if (Array.isArray(components)) {
+                    for (const component of components) {
+                        this.components.push(createComponent(component, props, content));
                     }
                 }
             }
-            updateTemplate(callback) {
-                return new Promise((resolve) => {
-                    const currentShouldUpdateCount = ++shouldUpdateCount;
-                    const self = this;
-                    function flush() {
-                        if (currentShouldUpdateCount === shouldUpdateCount) {
-                            shouldUpdateCount = 0;
-                            self.render();
-                            if (typeof callback === 'function')
-                                callback();
-                            resolve();
-                        }
-                    }
-                    resolved.then(flush);
-                });
+            body(part) {
+                part.setValue(this.components.map((component) => component.html()));
             }
-            createApp(config) {
-                element = config.element;
-                const App = this.createComponent(config.component, config.props);
-                app = App.instance;
-                this.render();
-                return App;
-            }
-            render() {
-                const appComponent = components.get(app);
-                if (appComponent) {
-                    render(appComponent.update(), element);
-                    this.executeActions();
+            change(changedProps, options) {
+                for (const component of this.components) {
+                    component.change(changedProps, options);
                 }
-                else if (element) {
-                    element.remove();
+            }
+            getComponents() {
+                return this.components;
+            }
+            setComponents(components) {
+                this.components = components;
+            }
+            destroy() {
+                for (const component of this.components) {
+                    component.destroy();
                 }
             }
         }
+        vido.prototype.Slot = Slot;
+        class Slots {
+            constructor() {
+                this.slots = {};
+            }
+            addSlot(name, slot) {
+                if (this.slots[name] === undefined) {
+                    this.slots[name] = [];
+                }
+                this.slots[name].push(slot);
+            }
+            change(changedProps, options) {
+                for (const name in this.slots) {
+                    for (const slot of this.slots[name]) {
+                        slot.change(changedProps, options);
+                    }
+                }
+            }
+            destroy() {
+                for (const name in this.slots) {
+                    for (const slot of this.slots[name]) {
+                        slot.destroy();
+                    }
+                }
+            }
+            get(name) {
+                return this.slots[name];
+            }
+            set(name, value) {
+                this.slots[name] = value;
+            }
+        }
+        vido.prototype.Slots = Slots;
+        /**
+         * Destroy component
+         *
+         * @param {string} instance
+         * @param {object} vidoInstance
+         */
+        vido.prototype.destroyComponent = function destroyComponent(instance, vidoInstance) {
+            if (vidoInstance.debug) {
+                console.groupCollapsed(`destroying component ${instance}...`);
+                console.log(clone({ components: components.keys(), actionsByInstance }));
+                console.trace();
+                console.groupEnd();
+            }
+            if (actionsByInstance.has(instance)) {
+                for (const action of actionsByInstance.get(instance)) {
+                    if (typeof action.componentAction.destroy === 'function') {
+                        action.componentAction.destroy(action.element, action.props);
+                    }
+                }
+            }
+            actionsByInstance.delete(instance);
+            const component = components.get(instance);
+            component.update();
+            component.destroy();
+            components.delete(instance);
+            if (vidoInstance.debug) {
+                console.groupCollapsed(`component destroyed ${instance}`);
+                console.log(clone({ components: components.keys(), actionsByInstance }));
+                console.trace();
+                console.groupEnd();
+            }
+        };
+        /**
+         * Update template - trigger render proccess
+         * @param {object} vidoInstance
+         */
+        vido.prototype.updateTemplate = function updateTemplate(callback) {
+            return new Promise((resolve) => {
+                const currentShouldUpdateCount = ++shouldUpdateCount;
+                const self = this;
+                function flush() {
+                    if (currentShouldUpdateCount === shouldUpdateCount) {
+                        shouldUpdateCount = 0;
+                        self.render();
+                        if (typeof callback === 'function')
+                            callback();
+                        resolve();
+                    }
+                }
+                resolved.then(flush);
+            });
+        };
+        /**
+         * Create app
+         *
+         * @param config
+         * @returns {object} component instance methods
+         */
+        vido.prototype.createApp = function createApp(config) {
+            element = config.element;
+            const App = this.createComponent(config.component, config.props);
+            app = App.instance;
+            this.render();
+            return App;
+        };
+        /**
+         * Execute actions
+         */
+        vido.prototype.executeActions = function executeActions() {
+            var _a, _b, _c;
+            for (const actions of actionsByInstance.values()) {
+                for (const action of actions) {
+                    if (action.element.vido === undefined) {
+                        const componentAction = action.componentAction;
+                        const create = componentAction.create;
+                        if (typeof create !== 'undefined') {
+                            let result;
+                            if (((_a = create.prototype) === null || _a === void 0 ? void 0 : _a.isAction) !== true &&
+                                create.isAction === undefined &&
+                                ((_b = create.prototype) === null || _b === void 0 ? void 0 : _b.update) === undefined &&
+                                ((_c = create.prototype) === null || _c === void 0 ? void 0 : _c.destroy) === undefined) {
+                                result = create(action.element, action.props);
+                            }
+                            else {
+                                result = new create(action.element, action.props);
+                            }
+                            if (result !== undefined) {
+                                if (typeof result === 'function') {
+                                    componentAction.destroy = result;
+                                }
+                                else {
+                                    if (typeof result.update === 'function') {
+                                        componentAction.update = result.update.bind(result);
+                                    }
+                                    if (typeof result.destroy === 'function') {
+                                        componentAction.destroy = result.destroy.bind(result);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else {
+                        action.element.vido = action.props;
+                        if (typeof action.componentAction.update === 'function') {
+                            action.componentAction.update(action.element, action.props);
+                        }
+                    }
+                }
+                for (const action of actions) {
+                    action.element.vido = action.props;
+                }
+            }
+        };
+        /**
+         * Render view
+         */
+        vido.prototype.render = function renderView() {
+            const appComponent = components.get(app);
+            if (appComponent) {
+                render(appComponent.update(), element);
+                this.executeActions();
+            }
+            else if (element) {
+                element.remove();
+            }
+        };
+        vido.prototype._components = components;
+        vido.prototype._actions = actionsByInstance;
         return new vido();
     }
     Vido.prototype.lithtml = lithtml;
@@ -3304,6 +3400,7 @@
     Vido.prototype.repeat = repeat;
     Vido.prototype.unsafeHTML = unsafeHTML;
     Vido.prototype.unti = until;
+    //# sourceMappingURL=vido.esm.js.map
 
     /**
      * A collection of shims that provide minimal functionality of the ES6 collections.
@@ -4244,6 +4341,11 @@
     function Main(vido, props = {}) {
         const { api, state, onDestroy, Actions, update, createComponent, html, StyleMap, schedule } = vido;
         const componentName = api.name;
+        const periodDivider = {
+            minute: 60000,
+            hour: 3600000,
+            day: 86400000
+        };
         // Initialize plugins
         onDestroy(state.subscribe('config.plugins', plugins => {
             if (typeof plugins !== 'undefined' && Array.isArray(plugins)) {
@@ -4410,14 +4512,18 @@
          * @param {string} period
          * @param {object} internalTime
          */
-        const generatePeriodDates = (period, internalTime) => {
+        const generatePeriodDates = (period, periodSize, internalTime) => {
+            const periodUsed = period === 'minute' ? 'hour' : period;
             const dates = [];
             let leftGlobal = internalTime.leftGlobal;
             const timePerPixel = internalTime.timePerPixel;
-            let startOfLeft = api.time
+            let startOfLeft = Math.floor(api.time
                 .date(leftGlobal)
-                .startOf(period)
-                .valueOf();
+                .startOf(periodUsed)
+                .valueOf() /
+                (periodDivider[period] * periodSize)) *
+                periodSize *
+                periodDivider[period];
             if (startOfLeft < leftGlobal)
                 startOfLeft = leftGlobal;
             let sub = leftGlobal - startOfLeft;
@@ -4425,17 +4531,17 @@
             let leftPx = 0;
             const diff = Math.ceil(api.time
                 .date(internalTime.rightGlobal)
-                .endOf(period)
-                .diff(api.time.date(leftGlobal).startOf(period), period, true));
+                .endOf(periodUsed)
+                .diff(api.time.date(leftGlobal).startOf(periodUsed), period, true) / periodSize);
             for (let i = 0; i < diff; i++) {
                 const date = {
                     sub,
                     subPx,
                     leftGlobal,
-                    rightGlobal: api.time
+                    rightGlobal: Math.round(api.time
                         .date(leftGlobal)
-                        .endOf(period)
-                        .valueOf(),
+                        .add(periodSize, period)
+                        .valueOf() / 10) * 10,
                     width: 0,
                     leftPx: 0,
                     rightPx: 0,
@@ -4479,6 +4585,9 @@
                 const formatting = level.formats.find(format => +time.zoom <= +format.zoomTo);
                 if (formatting && level.main) {
                     time.period = formatting.period;
+                    time.periodSize = formatting.periodSize || 1;
+                    time.roundMultiplier = periodDivider[time.period] * time.periodSize;
+                    formatting.roundMultiplier = time.roundMultiplier;
                 }
             }
             return time;
@@ -4493,7 +4602,7 @@
                     time.level = index;
                 }
                 if (formatting) {
-                    time.levels.push(generatePeriodDates(formatting.period, time));
+                    time.levels.push(generatePeriodDates(formatting.period, formatting.periodSize || 1, time));
                 }
                 index++;
             }
@@ -4565,7 +4674,14 @@
                     scrollLeft = api.limitScrollLeft(time.totalViewDurationPx, chartWidth, scrollLeft);
                 }
                 else {
-                    time.leftGlobal = scrollLeft * time.timePerPixel + time.finalFrom;
+                    if (state.get('config.scroll.round')) {
+                        time.leftGlobal =
+                            Math.round(api.time.date(scrollLeft * time.timePerPixel + time.finalFrom) / time.roundMultiplier) *
+                                time.roundMultiplier;
+                    }
+                    else {
+                        time.leftGlobal = scrollLeft * time.timePerPixel + time.finalFrom;
+                    }
                     time.rightGlobal = time.leftGlobal + chartWidth * time.timePerPixel;
                 }
             }
@@ -4932,6 +5048,7 @@
             `
             : ''), { vido, props: {}, templateProps });
     }
+    //# sourceMappingURL=List.js.map
 
     /**
      * ListColumn component
@@ -5076,6 +5193,7 @@
         </div>
       `, { vido, props, templateProps });
     }
+    //# sourceMappingURL=ListColumn.js.map
 
     /**
      * ListColumnHeader component
@@ -5161,6 +5279,7 @@
         </div>
       `, { vido, props, templateProps });
     }
+    //# sourceMappingURL=ListColumnHeader.js.map
 
     /**
      * ListColumnHeaderResizer component
@@ -5263,6 +5382,7 @@
         </div>
       `, { vido, props, templateProps });
     }
+    //# sourceMappingURL=ListColumnHeaderResizer.js.map
 
     /**
      * ListColumnRow component
@@ -5460,6 +5580,7 @@
         </div>
       `, { vido, props, templateProps });
     }
+    //# sourceMappingURL=ListColumnRow.js.map
 
     /**
      * ListColumnRowExpander component
@@ -5506,6 +5627,7 @@
         </div>
       `, { vido, props, templateProps });
     }
+    //# sourceMappingURL=ListColumnRowExpander.js.map
 
     /**
      * ListColumnRowExpanderToggle component
@@ -5615,6 +5737,7 @@
         </div>
       `, { vido, props, templateProps });
     }
+    //# sourceMappingURL=ListColumnRowExpanderToggle.js.map
 
     /**
      * ListToggle component
@@ -5655,6 +5778,7 @@
         <div class=${className} @click=${toggle}><img src=${open ? toggleIconsSrc.close : toggleIconsSrc.open} /></div>
       `, { props, vido, templateProps });
     }
+    //# sourceMappingURL=ListToggle.js.map
 
     /**
      * Chart component
@@ -5713,12 +5837,13 @@
                 const xMultiplier = state.get('config.scroll.xMultiplier');
                 const yMultiplier = state.get('config.scroll.yMultiplier');
                 const currentScrollLeft = state.get('config.scroll.left');
+                const zoomEnabled = state.get('config.chart.zoomEnabled');
                 const totalViewDurationPx = state.get('_internal.chart.time.totalViewDurationPx');
                 if (event.shiftKey && wheel.y) {
                     const newScrollLeft = api.limitScrollLeft(totalViewDurationPx, chartWidth, currentScrollLeft + wheel.y * xMultiplier);
                     state.update('config.scroll.left', newScrollLeft); // will trigger scrollbar to move which will trigger scroll event
                 }
-                else if (event.ctrlKey && wheel.y) {
+                else if (event.ctrlKey && wheel.y && zoomEnabled) {
                     event.preventDefault();
                     state.update('config.chart.time.zoom', currentZoom => {
                         if (wheel.y < 0) {
@@ -5792,6 +5917,7 @@
         </div>
       `, { vido, props: {}, templateProps });
     }
+    //# sourceMappingURL=Chart.js.map
 
     /**
      * ChartCalendar component
@@ -5835,6 +5961,9 @@
                     continue;
                 let currentDateFormat = 'YYYY-MM-DD HH'; // hour
                 switch (dates[0].period) {
+                    case 'minute':
+                        currentDateFormat = 'YYYY-MM-DD HH:mm';
+                        break;
                     case 'day':
                         currentDateFormat = 'YYYY-MM-DD';
                         break;
@@ -5871,6 +6000,7 @@
         </div>
       `, { props, vido, templateProps });
     }
+    //# sourceMappingURL=ChartCalendar.js.map
 
     class Action$1 {
         constructor() {
@@ -5878,6 +6008,7 @@
         }
     }
     Action$1.prototype.isAction = true;
+    //# sourceMappingURL=Action.js.map
 
     /**
      * ChartCalendarDay component
@@ -5946,19 +6077,22 @@
             }
             const formats = level.formats;
             const formatting = formats.find(formatting => +time.zoom <= +formatting.zoomTo);
+            formatting.roundMultiplier = formatting.roundMultiplier || 1;
             let format;
             {
                 format = formatting ? formatting.format({ timeStart, timeEnd, className, vido, props }) : null;
                 cache[cacheKey].format = format;
             }
             {
-                if (timeStart.format(props.currentDateFormat) === props.currentDate) {
+                if (timeStart <= api.time.date() && timeEnd > api.time.date()) {
                     current = ' gstc-current';
                 }
-                else if (timeStart.subtract(1, props.date.period).format(props.currentDateFormat) === props.currentDate) {
+                else if (timeStart.subtract(formatting.periodSize || 1, props.date.period) <= api.time.date() &&
+                    timeEnd.subtract(formatting.periodSize || 1, props.date.period) > api.time.date()) {
                     current = ' gstc-next';
                 }
-                else if (timeStart.add(1, props.date.period).format(props.currentDateFormat) === props.currentDate) {
+                else if (timeStart.add(formatting.periodSize || 1, props.date.period) <= api.time.date() &&
+                    timeEnd.add(formatting.periodSize || 1, props.date.period) > api.time.date()) {
                     current = ' gstc-previous';
                 }
                 else {
@@ -6027,6 +6161,7 @@
         </div>
       `, { props, vido, templateProps });
     }
+    //# sourceMappingURL=ChartCalendarDate.js.map
 
     /**
      * ChartTimeline component
@@ -6116,6 +6251,7 @@
         </div>
       `, { props, vido, templateProps });
     }
+    //# sourceMappingURL=ChartTimeline.js.map
 
     /**
      * ChartTimelineGrid component
@@ -6231,6 +6367,7 @@
         </div>
       `, { props, vido, templateProps });
     }
+    //# sourceMappingURL=ChartTimelineGrid.js.map
 
     /**
      * ChartTimelineGridRow component
@@ -6337,6 +6474,7 @@
       `, { vido, props, templateProps });
         };
     }
+    //# sourceMappingURL=ChartTimelineGridRow.js.map
 
     /**
      * ChartTimelineGridRowBlock component
@@ -6440,6 +6578,7 @@
       `, { props, vido, templateProps });
         };
     };
+    //# sourceMappingURL=ChartTimelineGridRowBlock.js.map
 
     /**
      * ChartTimelineItems component
@@ -6495,6 +6634,7 @@
         </div>
       `, { props, vido, templateProps });
     }
+    //# sourceMappingURL=ChartTimelineItems.js.map
 
     /**
      * ChartTimelineItemsRow component
@@ -6619,6 +6759,7 @@
       `, { props, vido, templateProps });
         };
     };
+    //# sourceMappingURL=ChartTimelineItemsRow.js.map
 
     /**
      * ChartTimelineItemsRowItem component
@@ -6782,6 +6923,7 @@
       `, { vido, props, templateProps });
         };
     }
+    //# sourceMappingURL=ChartTimelineItemsRowItem.js.map
 
     /**
      * Gantt-Schedule-Timeline-Calendar
@@ -6965,6 +7107,7 @@
                 }
             },
             chart: {
+                zoomEnabled: true,
                 time: {
                     period: 'day',
                     from: 0,
@@ -7033,6 +7176,14 @@
                             main: true,
                             formats: [
                                 {
+                                    zoomTo: 14,
+                                    period: 'minute',
+                                    periodSize: 15,
+                                    format({ timeStart, className, vido }) {
+                                        return vido.html `<span class="${className}-content gstc-date-thin">${timeStart.format('HH:mm')}</span>`;
+                                    }
+                                },
+                                {
                                     zoomTo: 16,
                                     period: 'hour',
                                     format({ timeStart }) {
@@ -7043,6 +7194,7 @@
                                     zoomTo: 17,
                                     period: 'hour',
                                     default: true,
+                                    periodSize: 3,
                                     format({ timeStart }) {
                                         return timeStart.format('HH');
                                     }
@@ -7200,6 +7352,7 @@
             usageStatistics: true
         };
     }
+    //# sourceMappingURL=default-config.js.map
 
     var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -7208,7 +7361,7 @@
     }
 
     var dayjs_min = createCommonjsModule(function (module, exports) {
-    !function(t,n){module.exports=n();}(commonjsGlobal,function(){var t="millisecond",n="second",e="minute",r="hour",i="day",s="week",u="month",o="quarter",a="year",h=/^(\d{4})-?(\d{1,2})-?(\d{0,2})[^0-9]*(\d{1,2})?:?(\d{1,2})?:?(\d{1,2})?.?(\d{1,3})?$/,f=/\[([^\]]+)]|Y{2,4}|M{1,4}|D{1,2}|d{1,4}|H{1,2}|h{1,2}|a|A|m{1,2}|s{1,2}|Z{1,2}|SSS/g,c=function(t,n,e){var r=String(t);return !r||r.length>=n?t:""+Array(n+1-r.length).join(e)+t},d={s:c,z:function(t){var n=-t.utcOffset(),e=Math.abs(n),r=Math.floor(e/60),i=e%60;return (n<=0?"+":"-")+c(r,2,"0")+":"+c(i,2,"0")},m:function(t,n){var e=12*(n.year()-t.year())+(n.month()-t.month()),r=t.clone().add(e,u),i=n-r<0,s=t.clone().add(e+(i?-1:1),u);return Number(-(e+(n-r)/(i?r-s:s-r))||0)},a:function(t){return t<0?Math.ceil(t)||0:Math.floor(t)},p:function(h){return {M:u,y:a,w:s,d:i,D:"date",h:r,m:e,s:n,ms:t,Q:o}[h]||String(h||"").toLowerCase().replace(/s$/,"")},u:function(t){return void 0===t}},$={name:"en",weekdays:"Sunday_Monday_Tuesday_Wednesday_Thursday_Friday_Saturday".split("_"),months:"January_February_March_April_May_June_July_August_September_October_November_December".split("_")},l="en",m={};m[l]=$;var y=function(t){return t instanceof v},M=function(t,n,e){var r;if(!t)return l;if("string"==typeof t)m[t]&&(r=t),n&&(m[t]=n,r=t);else{var i=t.name;m[i]=t,r=i;}return !e&&r&&(l=r),r||!e&&l},g=function(t,n,e){if(y(t))return t.clone();var r=n?"string"==typeof n?{format:n,pl:e}:n:{};return r.date=t,new v(r)},D=d;D.l=M,D.i=y,D.w=function(t,n){return g(t,{locale:n.$L,utc:n.$u,$offset:n.$offset})};var v=function(){function c(t){this.$L=this.$L||M(t.locale,null,!0),this.parse(t);}var d=c.prototype;return d.parse=function(t){this.$d=function(t){var n=t.date,e=t.utc;if(null===n)return new Date(NaN);if(D.u(n))return new Date;if(n instanceof Date)return new Date(n);if("string"==typeof n&&!/Z$/i.test(n)){var r=n.match(h);if(r)return e?new Date(Date.UTC(r[1],r[2]-1,r[3]||1,r[4]||0,r[5]||0,r[6]||0,r[7]||0)):new Date(r[1],r[2]-1,r[3]||1,r[4]||0,r[5]||0,r[6]||0,r[7]||0)}return new Date(n)}(t),this.init();},d.init=function(){var t=this.$d;this.$y=t.getFullYear(),this.$M=t.getMonth(),this.$D=t.getDate(),this.$W=t.getDay(),this.$H=t.getHours(),this.$m=t.getMinutes(),this.$s=t.getSeconds(),this.$ms=t.getMilliseconds();},d.$utils=function(){return D},d.isValid=function(){return !("Invalid Date"===this.$d.toString())},d.isSame=function(t,n){var e=g(t);return this.startOf(n)<=e&&e<=this.endOf(n)},d.isAfter=function(t,n){return g(t)<this.startOf(n)},d.isBefore=function(t,n){return this.endOf(n)<g(t)},d.$g=function(t,n,e){return D.u(t)?this[n]:this.set(e,t)},d.year=function(t){return this.$g(t,"$y",a)},d.month=function(t){return this.$g(t,"$M",u)},d.day=function(t){return this.$g(t,"$W",i)},d.date=function(t){return this.$g(t,"$D","date")},d.hour=function(t){return this.$g(t,"$H",r)},d.minute=function(t){return this.$g(t,"$m",e)},d.second=function(t){return this.$g(t,"$s",n)},d.millisecond=function(n){return this.$g(n,"$ms",t)},d.unix=function(){return Math.floor(this.valueOf()/1e3)},d.valueOf=function(){return this.$d.getTime()},d.startOf=function(t,o){var h=this,f=!!D.u(o)||o,c=D.p(t),d=function(t,n){var e=D.w(h.$u?Date.UTC(h.$y,n,t):new Date(h.$y,n,t),h);return f?e:e.endOf(i)},$=function(t,n){return D.w(h.toDate()[t].apply(h.toDate(),(f?[0,0,0,0]:[23,59,59,999]).slice(n)),h)},l=this.$W,m=this.$M,y=this.$D,M="set"+(this.$u?"UTC":"");switch(c){case a:return f?d(1,0):d(31,11);case u:return f?d(1,m):d(0,m+1);case s:var g=this.$locale().weekStart||0,v=(l<g?l+7:l)-g;return d(f?y-v:y+(6-v),m);case i:case"date":return $(M+"Hours",0);case r:return $(M+"Minutes",1);case e:return $(M+"Seconds",2);case n:return $(M+"Milliseconds",3);default:return this.clone()}},d.endOf=function(t){return this.startOf(t,!1)},d.$set=function(s,o){var h,f=D.p(s),c="set"+(this.$u?"UTC":""),d=(h={},h[i]=c+"Date",h.date=c+"Date",h[u]=c+"Month",h[a]=c+"FullYear",h[r]=c+"Hours",h[e]=c+"Minutes",h[n]=c+"Seconds",h[t]=c+"Milliseconds",h)[f],$=f===i?this.$D+(o-this.$W):o;if(f===u||f===a){var l=this.clone().set("date",1);l.$d[d]($),l.init(),this.$d=l.set("date",Math.min(this.$D,l.daysInMonth())).toDate();}else d&&this.$d[d]($);return this.init(),this},d.set=function(t,n){return this.clone().$set(t,n)},d.get=function(t){return this[D.p(t)]()},d.add=function(t,o){var h,f=this;t=Number(t);var c=D.p(o),d=function(n){var e=g(f);return D.w(e.date(e.date()+Math.round(n*t)),f)};if(c===u)return this.set(u,this.$M+t);if(c===a)return this.set(a,this.$y+t);if(c===i)return d(1);if(c===s)return d(7);var $=(h={},h[e]=6e4,h[r]=36e5,h[n]=1e3,h)[c]||1,l=this.$d.getTime()+t*$;return D.w(l,this)},d.subtract=function(t,n){return this.add(-1*t,n)},d.format=function(t){var n=this;if(!this.isValid())return "Invalid Date";var e=t||"YYYY-MM-DDTHH:mm:ssZ",r=D.z(this),i=this.$locale(),s=this.$H,u=this.$m,o=this.$M,a=i.weekdays,h=i.months,c=function(t,r,i,s){return t&&(t[r]||t(n,e))||i[r].substr(0,s)},d=function(t){return D.s(s%12||12,t,"0")},$=i.meridiem||function(t,n,e){var r=t<12?"AM":"PM";return e?r.toLowerCase():r},l={YY:String(this.$y).slice(-2),YYYY:this.$y,M:o+1,MM:D.s(o+1,2,"0"),MMM:c(i.monthsShort,o,h,3),MMMM:h[o]||h(this,e),D:this.$D,DD:D.s(this.$D,2,"0"),d:String(this.$W),dd:c(i.weekdaysMin,this.$W,a,2),ddd:c(i.weekdaysShort,this.$W,a,3),dddd:a[this.$W],H:String(s),HH:D.s(s,2,"0"),h:d(1),hh:d(2),a:$(s,u,!0),A:$(s,u,!1),m:String(u),mm:D.s(u,2,"0"),s:String(this.$s),ss:D.s(this.$s,2,"0"),SSS:D.s(this.$ms,3,"0"),Z:r};return e.replace(f,function(t,n){return n||l[t]||r.replace(":","")})},d.utcOffset=function(){return 15*-Math.round(this.$d.getTimezoneOffset()/15)},d.diff=function(t,h,f){var c,d=D.p(h),$=g(t),l=6e4*($.utcOffset()-this.utcOffset()),m=this-$,y=D.m(this,$);return y=(c={},c[a]=y/12,c[u]=y,c[o]=y/3,c[s]=(m-l)/6048e5,c[i]=(m-l)/864e5,c[r]=m/36e5,c[e]=m/6e4,c[n]=m/1e3,c)[d]||m,f?y:D.a(y)},d.daysInMonth=function(){return this.endOf(u).$D},d.$locale=function(){return m[this.$L]},d.locale=function(t,n){if(!t)return this.$L;var e=this.clone(),r=M(t,n,!0);return r&&(e.$L=r),e},d.clone=function(){return D.w(this.$d,this)},d.toDate=function(){return new Date(this.valueOf())},d.toJSON=function(){return this.isValid()?this.toISOString():null},d.toISOString=function(){return this.$d.toISOString()},d.toString=function(){return this.$d.toUTCString()},c}();return g.prototype=v.prototype,g.extend=function(t,n){return t(n,v,g),g},g.locale=M,g.isDayjs=y,g.unix=function(t){return g(1e3*t)},g.en=m[l],g.Ls=m,g});
+    !function(t,n){module.exports=n();}(commonjsGlobal,function(){var t="millisecond",n="second",e="minute",r="hour",i="day",s="week",u="month",o="quarter",a="year",h=/^(\d{4})-?(\d{1,2})-?(\d{0,2})[^0-9]*(\d{1,2})?:?(\d{1,2})?:?(\d{1,2})?.?(\d{1,3})?$/,f=/\[([^\]]+)]|Y{2,4}|M{1,4}|D{1,2}|d{1,4}|H{1,2}|h{1,2}|a|A|m{1,2}|s{1,2}|Z{1,2}|SSS/g,c=function(t,n,e){var r=String(t);return !r||r.length>=n?t:""+Array(n+1-r.length).join(e)+t},d={s:c,z:function(t){var n=-t.utcOffset(),e=Math.abs(n),r=Math.floor(e/60),i=e%60;return (n<=0?"+":"-")+c(r,2,"0")+":"+c(i,2,"0")},m:function(t,n){var e=12*(n.year()-t.year())+(n.month()-t.month()),r=t.clone().add(e,u),i=n-r<0,s=t.clone().add(e+(i?-1:1),u);return Number(-(e+(n-r)/(i?r-s:s-r))||0)},a:function(t){return t<0?Math.ceil(t)||0:Math.floor(t)},p:function(h){return {M:u,y:a,w:s,d:i,h:r,m:e,s:n,ms:t,Q:o}[h]||String(h||"").toLowerCase().replace(/s$/,"")},u:function(t){return void 0===t}},$={name:"en",weekdays:"Sunday_Monday_Tuesday_Wednesday_Thursday_Friday_Saturday".split("_"),months:"January_February_March_April_May_June_July_August_September_October_November_December".split("_")},l="en",m={};m[l]=$;var y=function(t){return t instanceof v},M=function(t,n,e){var r;if(!t)return l;if("string"==typeof t)m[t]&&(r=t),n&&(m[t]=n,r=t);else{var i=t.name;m[i]=t,r=i;}return e||(l=r),r},g=function(t,n,e){if(y(t))return t.clone();var r=n?"string"==typeof n?{format:n,pl:e}:n:{};return r.date=t,new v(r)},D=d;D.l=M,D.i=y,D.w=function(t,n){return g(t,{locale:n.$L,utc:n.$u,$offset:n.$offset})};var v=function(){function c(t){this.$L=this.$L||M(t.locale,null,!0),this.parse(t);}var d=c.prototype;return d.parse=function(t){this.$d=function(t){var n=t.date,e=t.utc;if(null===n)return new Date(NaN);if(D.u(n))return new Date;if(n instanceof Date)return new Date(n);if("string"==typeof n&&!/Z$/i.test(n)){var r=n.match(h);if(r)return e?new Date(Date.UTC(r[1],r[2]-1,r[3]||1,r[4]||0,r[5]||0,r[6]||0,r[7]||0)):new Date(r[1],r[2]-1,r[3]||1,r[4]||0,r[5]||0,r[6]||0,r[7]||0)}return new Date(n)}(t),this.init();},d.init=function(){var t=this.$d;this.$y=t.getFullYear(),this.$M=t.getMonth(),this.$D=t.getDate(),this.$W=t.getDay(),this.$H=t.getHours(),this.$m=t.getMinutes(),this.$s=t.getSeconds(),this.$ms=t.getMilliseconds();},d.$utils=function(){return D},d.isValid=function(){return !("Invalid Date"===this.$d.toString())},d.isSame=function(t,n){var e=g(t);return this.startOf(n)<=e&&e<=this.endOf(n)},d.isAfter=function(t,n){return g(t)<this.startOf(n)},d.isBefore=function(t,n){return this.endOf(n)<g(t)},d.$g=function(t,n,e){return D.u(t)?this[n]:this.set(e,t)},d.year=function(t){return this.$g(t,"$y",a)},d.month=function(t){return this.$g(t,"$M",u)},d.day=function(t){return this.$g(t,"$W",i)},d.date=function(t){return this.$g(t,"$D","date")},d.hour=function(t){return this.$g(t,"$H",r)},d.minute=function(t){return this.$g(t,"$m",e)},d.second=function(t){return this.$g(t,"$s",n)},d.millisecond=function(n){return this.$g(n,"$ms",t)},d.unix=function(){return Math.floor(this.valueOf()/1e3)},d.valueOf=function(){return this.$d.getTime()},d.startOf=function(t,o){var h=this,f=!!D.u(o)||o,c=D.p(t),d=function(t,n){var e=D.w(h.$u?Date.UTC(h.$y,n,t):new Date(h.$y,n,t),h);return f?e:e.endOf(i)},$=function(t,n){return D.w(h.toDate()[t].apply(h.toDate(),(f?[0,0,0,0]:[23,59,59,999]).slice(n)),h)},l=this.$W,m=this.$M,y=this.$D,M="set"+(this.$u?"UTC":"");switch(c){case a:return f?d(1,0):d(31,11);case u:return f?d(1,m):d(0,m+1);case s:var g=this.$locale().weekStart||0,v=(l<g?l+7:l)-g;return d(f?y-v:y+(6-v),m);case i:case"date":return $(M+"Hours",0);case r:return $(M+"Minutes",1);case e:return $(M+"Seconds",2);case n:return $(M+"Milliseconds",3);default:return this.clone()}},d.endOf=function(t){return this.startOf(t,!1)},d.$set=function(s,o){var h,f=D.p(s),c="set"+(this.$u?"UTC":""),d=(h={},h[i]=c+"Date",h.date=c+"Date",h[u]=c+"Month",h[a]=c+"FullYear",h[r]=c+"Hours",h[e]=c+"Minutes",h[n]=c+"Seconds",h[t]=c+"Milliseconds",h)[f],$=f===i?this.$D+(o-this.$W):o;if(f===u||f===a){var l=this.clone().set("date",1);l.$d[d]($),l.init(),this.$d=l.set("date",Math.min(this.$D,l.daysInMonth())).toDate();}else d&&this.$d[d]($);return this.init(),this},d.set=function(t,n){return this.clone().$set(t,n)},d.get=function(t){return this[D.p(t)]()},d.add=function(t,o){var h,f=this;t=Number(t);var c=D.p(o),d=function(n){var e=g(f);return D.w(e.date(e.date()+Math.round(n*t)),f)};if(c===u)return this.set(u,this.$M+t);if(c===a)return this.set(a,this.$y+t);if(c===i)return d(1);if(c===s)return d(7);var $=(h={},h[e]=6e4,h[r]=36e5,h[n]=1e3,h)[c]||1,l=this.$d.getTime()+t*$;return D.w(l,this)},d.subtract=function(t,n){return this.add(-1*t,n)},d.format=function(t){var n=this;if(!this.isValid())return "Invalid Date";var e=t||"YYYY-MM-DDTHH:mm:ssZ",r=D.z(this),i=this.$locale(),s=this.$H,u=this.$m,o=this.$M,a=i.weekdays,h=i.months,c=function(t,r,i,s){return t&&(t[r]||t(n,e))||i[r].substr(0,s)},d=function(t){return D.s(s%12||12,t,"0")},$=i.meridiem||function(t,n,e){var r=t<12?"AM":"PM";return e?r.toLowerCase():r},l={YY:String(this.$y).slice(-2),YYYY:this.$y,M:o+1,MM:D.s(o+1,2,"0"),MMM:c(i.monthsShort,o,h,3),MMMM:h[o]||h(this,e),D:this.$D,DD:D.s(this.$D,2,"0"),d:String(this.$W),dd:c(i.weekdaysMin,this.$W,a,2),ddd:c(i.weekdaysShort,this.$W,a,3),dddd:a[this.$W],H:String(s),HH:D.s(s,2,"0"),h:d(1),hh:d(2),a:$(s,u,!0),A:$(s,u,!1),m:String(u),mm:D.s(u,2,"0"),s:String(this.$s),ss:D.s(this.$s,2,"0"),SSS:D.s(this.$ms,3,"0"),Z:r};return e.replace(f,function(t,n){return n||l[t]||r.replace(":","")})},d.utcOffset=function(){return 15*-Math.round(this.$d.getTimezoneOffset()/15)},d.diff=function(t,h,f){var c,d=D.p(h),$=g(t),l=6e4*($.utcOffset()-this.utcOffset()),m=this-$,y=D.m(this,$);return y=(c={},c[a]=y/12,c[u]=y,c[o]=y/3,c[s]=(m-l)/6048e5,c[i]=(m-l)/864e5,c[r]=m/36e5,c[e]=m/6e4,c[n]=m/1e3,c)[d]||m,f?y:D.a(y)},d.daysInMonth=function(){return this.endOf(u).$D},d.$locale=function(){return m[this.$L]},d.locale=function(t,n){if(!t)return this.$L;var e=this.clone();return e.$L=M(t,n,!0),e},d.clone=function(){return D.w(this.$d,this)},d.toDate=function(){return new Date(this.valueOf())},d.toJSON=function(){return this.isValid()?this.toISOString():null},d.toISOString=function(){return this.$d.toISOString()},d.toString=function(){return this.$d.toUTCString()},c}();return g.prototype=v.prototype,g.extend=function(t,n){return t(n,v,g),g},g.locale=M,g.isDayjs=y,g.unix=function(t){return g(1e3*t)},g.en=m[l],g.Ls=m,g});
     });
 
     var utc = createCommonjsModule(function (module, exports) {
@@ -7220,7 +7373,7 @@
     });
 
     var weekOfYear = createCommonjsModule(function (module, exports) {
-    !function(e,t){module.exports=t();}(commonjsGlobal,function(){var e="week",t="year";return function(i,n){var r=n.prototype;r.week=function(i){if(void 0===i&&(i=null),null!==i)return this.add(7*(i-this.week()),"day");var n=this.$locale().yearStart||1;if(11===this.month()&&this.date()>25){var r=this.startOf(t).add(1,t).date(n),f=this.endOf(e);if(r.isBefore(f))return 1}var s=this.startOf(t).date(n).startOf(e).subtract(1,"millisecond"),a=this.diff(s,e,!0);return a<0?this.startOf("week").week():Math.ceil(a)},r.weeks=function(e){return void 0===e&&(e=null),this.week(e)};}});
+    !function(e,t){module.exports=t();}(commonjsGlobal,function(){var e="year";return function(t,i,n){var r=i.prototype;r.week=function(t){if(void 0===t&&(t=null),null!==t)return this.add(7*(t-this.week()),"day");var i=this.$locale().weekStart||0,r=n(this).endOf(e);if(0===i&&6!==r.day()&&11===this.month()&&31-this.date()<=r.day())return 1;var d=n(this).startOf(e),a=d.subtract(d.day()-i,"day").subtract(1,"millisecond"),o=this.diff(a,"week",!0);return Math.ceil(o)},r.weeks=function(e){return void 0===e&&(e=null),this.week(e)};}});
     });
 
     /**
@@ -7317,6 +7470,7 @@
             return viewPixelOffset;
         }
     }
+    //# sourceMappingURL=Time.js.map
 
     // forked from https://github.com/joonhocho/superwild
     function Matcher(pattern, wchar = '*') {
@@ -7393,6 +7547,7 @@
         }
         return true;
     };
+    //# sourceMappingURL=stringMatcher.js.map
 
     function WildcardObject(obj, delimeter, wildcard) {
         this.obj = obj;
@@ -7475,6 +7630,7 @@
     WildcardObject.prototype.get = function get(wildcard) {
         return this.goFurther(wildcard, this.obj, 0, '');
     };
+    //# sourceMappingURL=wildcard-object-scan.js.map
 
     class ObjectPath {
         static get(path, obj, copiedPath = null) {
@@ -7520,6 +7676,7 @@
             ObjectPath.set(path, newValue, obj[currentPath], copiedPath);
         }
     }
+    //# sourceMappingURL=ObjectPath.js.map
 
     function log(message, info) {
         console.debug(message, info);
@@ -8175,6 +8332,7 @@
             return groupedListener.listener.options.debug || groupedListener.eventInfo.options.debug ? Date.now() : 0;
         }
     }
+    //# sourceMappingURL=index.js.map
 
     /**
      * Schedule - a throttle function that uses requestAnimationFrame to limit the rate at which a function is called.
@@ -8228,6 +8386,7 @@
         }
         return mergeDeep$1(target, ...sources);
     }
+    //# sourceMappingURL=helpers.js.map
 
     /**
      * Api functions
@@ -8581,7 +8740,10 @@
                 state.update('config.scroll', scroll => {
                     const chartWidth = state.get('_internal.chart.dimensions.width');
                     const halfTime = (chartWidth / 2) * time.timePerPixel;
-                    const leftGlobal = toTime - halfTime - time.finalFrom;
+                    let leftGlobal = toTime - halfTime - time.finalFrom;
+                    if (state.get('config.scroll.round')) {
+                        leftGlobal = Math.round(leftGlobal / time.roundMultiplier) * time.roundMultiplier;
+                    }
                     scroll.left = this.limitScrollLeft(time.totalViewDurationPx, chartWidth, leftGlobal / time.timePerPixel);
                     return scroll;
                 });
@@ -8635,6 +8797,7 @@
         }
         return api;
     }
+    //# sourceMappingURL=Api.js.map
 
     /**
      * Gantt-Schedule-Timeline-Calendar
@@ -8712,6 +8875,7 @@
         return { state, app, api: internalApi };
     }
     GSTC.api = publicApi;
+    //# sourceMappingURL=index.js.map
 
     return GSTC;
 

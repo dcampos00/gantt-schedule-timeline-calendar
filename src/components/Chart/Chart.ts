@@ -76,6 +76,7 @@ export default function Chart(vido, props = {}) {
       const xMultiplier = state.get('config.scroll.xMultiplier');
       const yMultiplier = state.get('config.scroll.yMultiplier');
       const currentScrollLeft = state.get('config.scroll.left');
+      const zoomEnabled = state.get('config.chart.zoomEnabled');
       const totalViewDurationPx = state.get('_internal.chart.time.totalViewDurationPx');
       if (event.shiftKey && wheel.y) {
         const newScrollLeft = api.limitScrollLeft(
@@ -84,7 +85,7 @@ export default function Chart(vido, props = {}) {
           currentScrollLeft + wheel.y * xMultiplier
         );
         state.update('config.scroll.left', newScrollLeft); // will trigger scrollbar to move which will trigger scroll event
-      } else if (event.ctrlKey && wheel.y) {
+      } else if (event.ctrlKey && wheel.y && zoomEnabled) {
         event.preventDefault();
         state.update('config.chart.time.zoom', currentZoom => {
           if (wheel.y < 0) {

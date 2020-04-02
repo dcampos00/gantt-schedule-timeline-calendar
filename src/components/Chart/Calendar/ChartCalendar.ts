@@ -53,6 +53,9 @@ export default function ChartCalendar(vido, props) {
         if (!dates.length) continue;
         let currentDateFormat = 'YYYY-MM-DD HH'; // hour
         switch (dates[0].period) {
+          case 'minute':
+            currentDateFormat = 'YYYY-MM-DD HH:mm';
+            break;
           case 'day':
             currentDateFormat = 'YYYY-MM-DD';
             break;

@@ -178,6 +178,8 @@ export interface ChartInternalTime {
   levels: ChartInternalTimeLevel[];
   additionalSpaces?: ChartCalendarAdditionalSpaces;
   calculatedZoomMode?: boolean;
+  periodSize?: number;
+  roundMultiplier?: number;
 }
 export interface ChartCalendarFormatArguments {
   timeStart: Dayjs;
@@ -186,12 +188,14 @@ export interface ChartCalendarFormatArguments {
   props: any;
   vido: vido;
 }
-export type Period = 'year' | 'month' | 'week' | 'day' | 'hour';
+export type Period = 'year' | 'month' | 'week' | 'day' | 'hour' | 'minute';
 export interface ChartCalendarFormat {
   zoomTo: number;
   period: Period;
+  periodSize?: number;
   default?: boolean;
   className?: string;
+  roundMultiplier?: number;
   format: (arguments: ChartCalendarFormatArguments) => string | htmlResult;
 }
 export interface ChartCalendarAdditionalSpace {
@@ -222,6 +226,7 @@ export interface ChartGrid {
   block?: ChartGridBlock;
 }
 export interface Chart {
+  zoomEnabled?: Boolean;
   time?: ChartTime;
   calendar?: ChartCalendar;
   grid?: ChartGrid;

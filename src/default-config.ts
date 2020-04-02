@@ -209,6 +209,7 @@ function defaultConfig(): Config {
       }
     },
     chart: {
+      zoomEnabled: true,
       time: {
         period: 'day',
         from: 0,
@@ -277,6 +278,16 @@ function defaultConfig(): Config {
             main: true,
             formats: [
               {
+                zoomTo: 14,
+                period: 'minute',
+                periodSize: 15,
+                format({ timeStart, className, vido }) {
+                  return vido.html`<span class="${className}-content gstc-date-thin">${timeStart.format(
+                    'HH:mm'
+                  )}</span>`;
+                }
+              },
+              {
                 zoomTo: 16,
                 period: 'hour',
                 format({ timeStart }) {
@@ -287,6 +298,7 @@ function defaultConfig(): Config {
                 zoomTo: 17,
                 period: 'hour',
                 default: true,
+                periodSize: 3,
                 format({ timeStart }) {
                   return timeStart.format('HH');
                 }

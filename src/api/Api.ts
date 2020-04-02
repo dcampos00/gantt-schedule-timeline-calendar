@@ -389,7 +389,10 @@ export function getInternalApi(state) {
       state.update('config.scroll', scroll => {
         const chartWidth = state.get('_internal.chart.dimensions.width');
         const halfTime = (chartWidth / 2) * time.timePerPixel;
-        const leftGlobal = toTime - halfTime - time.finalFrom;
+        let leftGlobal = toTime - halfTime - time.finalFrom;
+        if (state.get('config.scroll.round')) {
+          leftGlobal = Math.round(leftGlobal / time.roundMultiplier) * time.roundMultiplier;
+        }
         scroll.left = this.limitScrollLeft(time.totalViewDurationPx, chartWidth, leftGlobal / time.timePerPixel);
         return scroll;
       });
