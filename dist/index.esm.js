@@ -3392,7 +3392,6 @@ Vido.prototype.ifDefined = ifDefined;
 Vido.prototype.repeat = repeat;
 Vido.prototype.unsafeHTML = unsafeHTML;
 Vido.prototype.unti = until;
-//# sourceMappingURL=vido.esm.js.map
 
 /**
  * A collection of shims that provide minimal functionality of the ES6 collections.
@@ -5040,7 +5039,6 @@ function List(vido, props = {}) {
             `
         : ''), { vido, props: {}, templateProps });
 }
-//# sourceMappingURL=List.js.map
 
 /**
  * ListColumn component
@@ -5185,7 +5183,6 @@ function ListColumn(vido, props) {
         </div>
       `, { vido, props, templateProps });
 }
-//# sourceMappingURL=ListColumn.js.map
 
 /**
  * ListColumnHeader component
@@ -5271,7 +5268,6 @@ function ListColumnHeader(vido, props) {
         </div>
       `, { vido, props, templateProps });
 }
-//# sourceMappingURL=ListColumnHeader.js.map
 
 /**
  * ListColumnHeaderResizer component
@@ -5374,7 +5370,6 @@ function ListColumnHeaderResizer(vido, props) {
         </div>
       `, { vido, props, templateProps });
 }
-//# sourceMappingURL=ListColumnHeaderResizer.js.map
 
 /**
  * ListColumnRow component
@@ -5572,7 +5567,6 @@ function ListColumnRow(vido, props) {
         </div>
       `, { vido, props, templateProps });
 }
-//# sourceMappingURL=ListColumnRow.js.map
 
 /**
  * ListColumnRowExpander component
@@ -5619,7 +5613,6 @@ function ListColumnRowExpander(vido, props) {
         </div>
       `, { vido, props, templateProps });
 }
-//# sourceMappingURL=ListColumnRowExpander.js.map
 
 /**
  * ListColumnRowExpanderToggle component
@@ -5729,7 +5722,6 @@ function ListColumnRowExpanderToggle(vido, props) {
         </div>
       `, { vido, props, templateProps });
 }
-//# sourceMappingURL=ListColumnRowExpanderToggle.js.map
 
 /**
  * ListToggle component
@@ -5770,7 +5762,6 @@ function ListToggle(vido, props = {}) {
         <div class=${className} @click=${toggle}><img src=${open ? toggleIconsSrc.close : toggleIconsSrc.open} /></div>
       `, { props, vido, templateProps });
 }
-//# sourceMappingURL=ListToggle.js.map
 
 /**
  * Chart component
@@ -5909,7 +5900,6 @@ function Chart(vido, props = {}) {
         </div>
       `, { vido, props: {}, templateProps });
 }
-//# sourceMappingURL=Chart.js.map
 
 /**
  * ChartCalendar component
@@ -5992,7 +5982,6 @@ function ChartCalendar(vido, props) {
         </div>
       `, { props, vido, templateProps });
 }
-//# sourceMappingURL=ChartCalendar.js.map
 
 class Action$1 {
     constructor() {
@@ -6000,7 +5989,6 @@ class Action$1 {
     }
 }
 Action$1.prototype.isAction = true;
-//# sourceMappingURL=Action.js.map
 
 /**
  * ChartCalendarDay component
@@ -6153,7 +6141,6 @@ function ChartCalendarDay(vido, props) {
         </div>
       `, { props, vido, templateProps });
 }
-//# sourceMappingURL=ChartCalendarDate.js.map
 
 /**
  * ChartTimeline component
@@ -6243,7 +6230,6 @@ function ChartTimeline(vido, props) {
         </div>
       `, { props, vido, templateProps });
 }
-//# sourceMappingURL=ChartTimeline.js.map
 
 /**
  * ChartTimelineGrid component
@@ -6359,7 +6345,6 @@ function ChartTimelineGrid(vido, props) {
         </div>
       `, { props, vido, templateProps });
 }
-//# sourceMappingURL=ChartTimelineGrid.js.map
 
 /**
  * ChartTimelineGridRow component
@@ -6466,7 +6451,6 @@ function ChartTimelineGridRow(vido, props) {
       `, { vido, props, templateProps });
     };
 }
-//# sourceMappingURL=ChartTimelineGridRow.js.map
 
 /**
  * ChartTimelineGridRowBlock component
@@ -6570,7 +6554,6 @@ const ChartTimelineGridRowBlock = (vido, props) => {
       `, { props, vido, templateProps });
     };
 };
-//# sourceMappingURL=ChartTimelineGridRowBlock.js.map
 
 /**
  * ChartTimelineItems component
@@ -6626,7 +6609,6 @@ function ChartTimelineItems(vido, props = {}) {
         </div>
       `, { props, vido, templateProps });
 }
-//# sourceMappingURL=ChartTimelineItems.js.map
 
 /**
  * ChartTimelineItemsRow component
@@ -6751,7 +6733,6 @@ const ChartTimelineItemsRow = (vido, props) => {
       `, { props, vido, templateProps });
     };
 };
-//# sourceMappingURL=ChartTimelineItemsRow.js.map
 
 /**
  * ChartTimelineItemsRowItem component
@@ -6915,7 +6896,6 @@ function ChartTimelineItemsRowItem(vido, props) {
       `, { vido, props, templateProps });
     };
 }
-//# sourceMappingURL=ChartTimelineItemsRowItem.js.map
 
 /**
  * Gantt-Schedule-Timeline-Calendar
@@ -7344,7 +7324,6 @@ function defaultConfig() {
         usageStatistics: true
     };
 }
-//# sourceMappingURL=default-config.js.map
 
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -7462,7 +7441,6 @@ class TimeApi {
         return viewPixelOffset;
     }
 }
-//# sourceMappingURL=Time.js.map
 
 // forked from https://github.com/joonhocho/superwild
 function Matcher(pattern, wchar = '*') {
@@ -7539,7 +7517,6 @@ Matcher.prototype.match = function match(match) {
     }
     return true;
 };
-//# sourceMappingURL=stringMatcher.js.map
 
 function WildcardObject(obj, delimeter, wildcard) {
     this.obj = obj;
@@ -7622,7 +7599,6 @@ WildcardObject.prototype.goFurther = function goFurther(wildcard, currentObj, pa
 WildcardObject.prototype.get = function get(wildcard) {
     return this.goFurther(wildcard, this.obj, 0, '');
 };
-//# sourceMappingURL=wildcard-object-scan.js.map
 
 class ObjectPath {
     static get(path, obj, copiedPath = null) {
@@ -7668,7 +7644,6 @@ class ObjectPath {
         ObjectPath.set(path, newValue, obj[currentPath], copiedPath);
     }
 }
-//# sourceMappingURL=ObjectPath.js.map
 
 function log(message, info) {
     console.debug(message, info);
@@ -8324,7 +8299,6 @@ class DeepState {
         return groupedListener.listener.options.debug || groupedListener.eventInfo.options.debug ? Date.now() : 0;
     }
 }
-//# sourceMappingURL=index.js.map
 
 /**
  * Schedule - a throttle function that uses requestAnimationFrame to limit the rate at which a function is called.
@@ -8378,7 +8352,6 @@ function mergeDeep$1(target, ...sources) {
     }
     return mergeDeep$1(target, ...sources);
 }
-//# sourceMappingURL=helpers.js.map
 
 /**
  * Api functions
@@ -8789,7 +8762,6 @@ function getInternalApi(state) {
     }
     return api;
 }
-//# sourceMappingURL=Api.js.map
 
 /**
  * Gantt-Schedule-Timeline-Calendar
@@ -8867,7 +8839,6 @@ function GSTC(options) {
     return { state, app, api: internalApi };
 }
 GSTC.api = publicApi;
-//# sourceMappingURL=index.js.map
 
 export default GSTC;
 //# sourceMappingURL=index.esm.js.map
