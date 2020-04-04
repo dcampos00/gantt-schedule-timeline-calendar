@@ -121,7 +121,7 @@ function CalendarScroll(options = {}) {
     const defaultOptions = {
         speed: 0.25,
         hideScroll: false,
-        onChange(time) { }
+        onChange(time) { },
     };
     options = Object.assign(Object.assign({}, defaultOptions), options);
     class CalendarScrollAction extends Nt {
@@ -162,10 +162,11 @@ function CalendarScroll(options = {}) {
             let finalMovement = movedX * options.speed;
             if (Math.abs(finalMovement) >= 1) {
                 finalMovement = Math.round(finalMovement);
-                state.update('config.chart.time', time => {
+                state.update('config.chart.time', (time) => {
+                    const periodSize = state.get('_internal.chart.time.periodSize') || 1;
                     let centerTime = api.time
                         .date(time.centerGlobal)
-                        .add(finalMovement * -1, time.period)
+                        .add(finalMovement * -1 * periodSize, time.period)
                         .valueOf();
                     const movedTime = centerTime - time.centerGlobal;
                     time.leftGlobal += movedTime;
@@ -196,7 +197,7 @@ function CalendarScroll(options = {}) {
         api = vido.api;
         state = vido.state;
         update = vido.update;
-        state.update('config.actions.chart-calendar', actions => {
+        state.update('config.actions.chart-calendar', (actions) => {
             actions.push(CalendarScrollAction);
             return actions;
         });
