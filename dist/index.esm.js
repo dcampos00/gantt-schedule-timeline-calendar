@@ -4504,13 +4504,12 @@ function Main(vido, props = {}) {
      * @param {object} internalTime
      */
     const generatePeriodDates = (period, periodSize, internalTime) => {
-        const periodUsed = period === 'minute' ? 'hour' : period;
         const dates = [];
         let leftGlobal = internalTime.leftGlobal;
         const timePerPixel = internalTime.timePerPixel;
         let startOfLeft = Math.floor(api.time
             .date(leftGlobal)
-            .startOf(periodUsed)
+            .startOf(period)
             .valueOf() /
             (periodDivider[period] * periodSize)) *
             periodSize *
@@ -4522,8 +4521,8 @@ function Main(vido, props = {}) {
         let leftPx = 0;
         const diff = Math.ceil(api.time
             .date(internalTime.rightGlobal)
-            .endOf(periodUsed)
-            .diff(api.time.date(leftGlobal).startOf(periodUsed), period, true) / periodSize);
+            .endOf(period)
+            .diff(api.time.date(leftGlobal).startOf(period), period, true) / periodSize);
         for (let i = 0; i < diff; i++) {
             const date = {
                 sub,
@@ -7394,6 +7393,8 @@ class TimeApi {
         time = Object.assign({}, time);
         time.from = +time.from;
         time.to = +time.to;
+        time.finalFrom = time.from;
+        time.finalTo = time.to;
         let from = Number.MAX_SAFE_INTEGER, to = 0;
         const items = this.state.get('config.chart.items');
         if (Object.keys(items).length === 0) {

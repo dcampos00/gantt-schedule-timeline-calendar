@@ -66,6 +66,8 @@ export default class TimeApi {
     time = { ...time };
     time.from = +time.from;
     time.to = +time.to;
+    time.finalFrom = time.from;
+    time.finalTo = time.to;
 
     let from = Number.MAX_SAFE_INTEGER,
       to = 0;

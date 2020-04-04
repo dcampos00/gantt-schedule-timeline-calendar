@@ -237,7 +237,6 @@ export default function Main(vido, props = {}) {
     periodSize: number,
     internalTime: ChartInternalTime
   ): ChartInternalTimeLevel => {
-    const periodUsed = period === 'minute' ? 'hour' : period;
     const dates = [];
     let leftGlobal = internalTime.leftGlobal;
     const timePerPixel = internalTime.timePerPixel;
@@ -245,7 +244,7 @@ export default function Main(vido, props = {}) {
       Math.floor(
         api.time
           .date(leftGlobal)
-          .startOf(periodUsed)
+          .startOf(period)
           .valueOf() /
           (periodDivider[period] * periodSize)
       ) *
@@ -259,8 +258,8 @@ export default function Main(vido, props = {}) {
     const diff = Math.ceil(
       api.time
         .date(internalTime.rightGlobal)
-        .endOf(periodUsed)
-        .diff(api.time.date(leftGlobal).startOf(periodUsed), period, true) / periodSize
+        .endOf(period)
+        .diff(api.time.date(leftGlobal).startOf(period), period, true) / periodSize
     );
     for (let i = 0; i < diff; i++) {
       const date = {
