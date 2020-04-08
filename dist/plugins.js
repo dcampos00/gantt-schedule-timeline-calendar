@@ -111,8 +111,11 @@ function ItemMovement(options = {}) {
         snapEnd(timeEnd, endDiff) {
             return timeEnd + endDiff;
         },
+        onDropItem(item) {
+            return;
+        },
         ghostNode: true,
-        wait: 0
+        wait: 0,
     };
     options = Object.assign(Object.assign({}, defaultOptions), options);
     const movementState = {};
@@ -238,6 +241,7 @@ function ItemMovement(options = {}) {
             resizerEl.style.visibility = 'visible';
         }
         function labelDown(ev) {
+            console.log('labelDown');
             const normalized = api.normalizePointerEvent(ev);
             if ((ev.type === 'pointerdown' || ev.type === 'mousedown') && ev.button !== 0) {
                 return;
@@ -348,7 +352,7 @@ function ItemMovement(options = {}) {
             const finalAdd = finalEndTime - originalEnd;
             const collision = isCollision(row.id, item.id, item.time.start, item.time.end + finalAdd);
             if (finalAdd && !collision) {
-                state.update(`config.chart.items.${data.item.id}.time`, time => {
+                state.update(`config.chart.items.${data.item.id}.time`, (time) => {
                     time.start = getSnapStart(data)(time.start, 0, item);
                     time.end = getSnapEnd(data)(time.end, finalAdd, item) - 1;
                     return time;
@@ -387,6 +391,7 @@ function ItemMovement(options = {}) {
                 timePerPixel = state.get('_internal.chart.time.timePerPixel');
             }
             const moveable = isMoveable(data);
+            // console.log(movement);
             if (movement.moving) {
                 if (moveable === true || moveable === 'x' || (Array.isArray(moveable) && moveable.includes(rowId))) {
                     movementX(normalized, row, item, zoom, timePerPixel);
@@ -421,6 +426,10 @@ function ItemMovement(options = {}) {
         }
         function documentUp(ev) {
             const movement = getMovement(data);
+            // Emit drop event
+            if (movement.moving) {
+                options.onDropItem(data);
+            }
             if (movement.moving || movement.resizing || movement.waiting) {
                 ev.stopPropagation();
                 ev.preventDefault();
@@ -485,11 +494,11 @@ function ItemMovement(options = {}) {
                     document.removeEventListener('touchcancel', documentUp);
                 }
                 resizerEl.remove();
-            }
+            },
         };
     }
     return function initialize(vido) {
-        vido.state.update('config.actions.chart-timeline-items-row-item', actions => {
+        vido.state.update('config.actions.chart-timeline-items-row-item', (actions) => {
             actions.push(ItemAction);
             return actions;
         });
