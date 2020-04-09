@@ -17,6 +17,7 @@ export interface Options {
   snapStart?: (timeStart: number, startDiff: number, item: object) => number;
   snapEnd?: (timeEnd: number, endDiff: number, item: object) => number;
   onDropItem?: (item: any) => void;
+  onDragItem?: (item: any) => void;
   ghostNode?: boolean;
   wait?: number;
 }
@@ -49,6 +50,9 @@ export default function ItemMovement(options: Options = {}) {
       return timeEnd + endDiff;
     },
     onDropItem(item) {
+      return;
+    },
+    onDragItem(item) {
       return;
     },
     ghostNode: true,
@@ -194,10 +198,12 @@ export default function ItemMovement(options: Options = {}) {
     }
 
     function labelDown(ev) {
-      console.log('labelDown');
       const normalized = api.normalizePointerEvent(ev);
       if ((ev.type === 'pointerdown' || ev.type === 'mousedown') && ev.button !== 0) {
         return;
+      }
+      if (typeof options.onDragItem === 'function') {
+        options.onDragItem(data);
       }
       const movement: Movement = getMovement(data);
       movement.waiting = true;
@@ -384,7 +390,7 @@ export default function ItemMovement(options: Options = {}) {
     function documentUp(ev) {
       const movement = getMovement(data);
       // Emit drop event
-      if (movement.moving) {
+      if (movement.moving && typeof options.onDropItem === 'function') {
         options.onDropItem(data);
       }
       if (movement.moving || movement.resizing || movement.waiting) {

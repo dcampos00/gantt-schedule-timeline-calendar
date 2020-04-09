@@ -24,6 +24,9 @@ function ItemMovement(options = {}) {
         onDropItem(item) {
             return;
         },
+        onDragItem(item) {
+            return;
+        },
         ghostNode: true,
         wait: 0,
     };
@@ -151,10 +154,12 @@ function ItemMovement(options = {}) {
             resizerEl.style.visibility = 'visible';
         }
         function labelDown(ev) {
-            console.log('labelDown');
             const normalized = api.normalizePointerEvent(ev);
             if ((ev.type === 'pointerdown' || ev.type === 'mousedown') && ev.button !== 0) {
                 return;
+            }
+            if (typeof options.onDragItem === 'function') {
+                options.onDragItem(data);
             }
             const movement = getMovement(data);
             movement.waiting = true;
@@ -337,7 +342,7 @@ function ItemMovement(options = {}) {
         function documentUp(ev) {
             const movement = getMovement(data);
             // Emit drop event
-            if (movement.moving) {
+            if (movement.moving && typeof options.onDropItem === 'function') {
                 options.onDropItem(data);
             }
             if (movement.moving || movement.resizing || movement.waiting) {
